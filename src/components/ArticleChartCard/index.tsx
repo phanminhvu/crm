@@ -1,0 +1,90 @@
+import React, { useEffect, useState } from 'react';
+import { Spin, Card, Divider, Row, Col, Tag } from 'antd';
+
+import IconSvg from '@/components/IconSvg';
+
+import styles from '@/assets/css/index.module.less';
+import { ArticleChartDataType } from '@/apis/models/data';
+import { ResponseData } from '@/utils/request';
+import { dailynewArticles } from '@/apis/services/PageService';
+
+const ArticleChartCard: React.FC = () => {
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [visitData, setVisitData] = useState<ArticleChartDataType>({
+    total: 0,
+    num: 0,
+    week: 0,
+    day: 0,
+  });
+
+  const getData = async () => {
+    setLoading(true);
+    try {
+      const response: ResponseData<ArticleChartDataType> = await dailynewArticles();
+      const { data } = response;
+      setVisitData({
+        total: data?.total || 0,
+        num: data?.num || 0,
+        week: data?.week || 0,
+        day: data?.day || 0,
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  return (
+    <Spin spinning={loading} size='large'>
+      <Card
+        className={styles.homeBoxCard}
+        title={'Tỉ lệ'}
+        extra={<Tag color='cyan'>{'Ngày'}</Tag>}
+      >
+        <div className={styles.num}>{visitData.num.toLocaleString()}</div>
+        <div className={styles.height40}>
+          <div className={styles.articleText}>
+            <span>
+              {'Ngày'} {Math.abs(visitData.day)}%
+              {visitData.day > 0 ? (
+                <span className={styles.colored4014}>
+                  <IconSvg name='arrow-down' style={{ transform: 'rotate(180deg)' }} />
+                </span>
+              ) : (
+                <span className={styles.color19be6b}>
+                  <IconSvg name='arrow-down' />
+                </span>
+              )}
+            </span>
+            <span className='margin-l10'>
+              {'Tuần'} {Math.abs(visitData.week)}%
+              {visitData.week > 0 ? (
+                <span className={styles.colored4014}>
+                  <IconSvg name='arrow-down' style={{ transform: 'rotate(180deg)' }} />
+                </span>
+              ) : (
+                <span className={styles.color19be6b}>
+                  <IconSvg name='arrow-down' />
+                </span>
+              )}
+            </span>
+          </div>
+        </div>
+        <Divider />
+        <Row>
+          <Col span={12}>{'Tổng'}</Col>
+          <Col className='text-align-right' span={12}>
+            {visitData.total.toLocaleString()}
+          </Col>
+        </Row>
+      </Card>
+    </Spin>
+  );
+};
+
+export default ArticleChartCard;
